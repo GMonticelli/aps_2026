@@ -7,9 +7,9 @@ Created on Wed Mar 11 20:28:38 2026
 import numpy as np
 import matplotlib.pyplot as plt
 
-fs = 100 #Hz, frecuencia de muestreo
+fs = 1000 #Hz, frecuencia de muestreo
 f0 = 1 #Hz, frecuencia de la senoidal
-n = 100 #muestras por ciclo
+n = 1000 #muestras por ciclo
 vmax = 1 #volts
 dc = 0 #valor medio, volts
 ts = 1/fs
@@ -116,4 +116,51 @@ vmax = np.sqrt(2)
 tt, xx = mi_senoidal(vmax, dc, f0, n, fs, ph=0)
 Px = np.var(xx)
 SNR = -20
-Pr = 1/10**(SNR/10)
+Pr = 10**(SNR/10)
+
+U_n = np.random.normal(mu,sigma,n)
+
+xxn = xx + U_n
+
+plt.plot(tt, xxn, label ='Senoidal con Ruido')
+plt.plot(tt, xx, 'r', label = 'Senoidal pura')
+plt.grid()
+plt.legend()
+plt.show()
+
+#%%
+
+from scipy import signal as sig
+
+n= 1000 #cantidad de muestras
+
+#Armo la delta
+n0 = 300
+dd = np.zeros(n)
+dd[n0] = 1
+
+yy = (1/n)*sig.convolve(xx, dd)
+plt.title('Convolucion de senoidal con delta')
+plt.plot(yy)
+plt.grid()
+plt.show()
+
+#%%
+
+yyf = (1/n)*sig.convolve(U_n, np.flip(U_n))
+plt.title('Correlación de ruido consigo mismo')
+plt.plot(yyf)
+plt.grid()
+plt.show()
+
+#%%Cuantizacion
+
+B = 3 #Bits
+Vfs = 3 #Volts
+qq = Vfs / 2**B
+
+xxq = np.round(xx / qq)
+
+plt.plot(xxq, label ='Senoidal cuantizada')
+plt.grid()
+plt.show()
