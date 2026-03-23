@@ -115,8 +115,8 @@ plt.show()
 vmax = np.sqrt(2)
 tt, xx = mi_senoidal(vmax, dc, f0, n, fs, ph=0)
 Px = np.var(xx)
-SNR = -20
-Pr = 10**(SNR/10)
+SNR = 15
+Pr = 10**(-SNR/10)
 
 U_n = np.random.normal(mu,sigma,n)
 
@@ -128,7 +128,7 @@ plt.grid()
 plt.legend()
 plt.show()
 
-#%%
+#%% Convoluciones
 
 from scipy import signal as sig
 
@@ -145,7 +145,7 @@ plt.plot(yy)
 plt.grid()
 plt.show()
 
-#%%
+#%% Correlación (Conv + flip)
 
 yyf = (1/n)*sig.convolve(U_n, np.flip(U_n))
 plt.title('Correlación de ruido consigo mismo')
@@ -153,14 +153,137 @@ plt.plot(yyf)
 plt.grid()
 plt.show()
 
-#%%Cuantizacion
+#%% Cuantización y error
 
-B = 3 #Bits
-Vfs = 3 #Volts
-qq = Vfs / 2**B
+B = 3       # bits
+Vfs = 3     # volts
+qq = Vfs / (2**B)
 
-xxq = np.round(xx / qq)
+# Cuantización
+xxq_idx = np.round(xx / qq)
+xxq = xxq_idx * qq
 
-plt.plot(xxq, label ='Senoidal cuantizada')
-plt.grid()
+# Error
+error = xx - xxq
+
+
+#%% Figura con subplots
+
+fig, axs = plt.subplots(2, 1, figsize=(10,7), sharex=True)
+
+# --- Señal original + cuantizada ---
+axs[0].plot(tt, xx, color='blue', label='Señal original')
+axs[0].step(tt, xxq, where='mid', color='orange', label='Señal cuantizada')
+axs[0].set_title('Señal original vs cuantizada')
+axs[0].set_ylabel('Amplitud [V]')
+axs[0].grid()
+axs[0].legend()
+
+# --- Error de cuantización ---
+axs[1].plot(tt, error, color='red', label='Error de cuantización')
+axs[1].set_title('Error de cuantización')
+axs[1].set_xlabel('Tiempo [s]')
+axs[1].set_ylabel('Error [V]')
+axs[1].grid()
+axs[1].legend()
+
+plt.tight_layout()
 plt.show()
+#%% Usamos la señal con ruido
+
+B = 3       # bits
+Vfs = 3     # volts
+qq = Vfs / (2**B)
+
+# Cuantización
+xxq_idx = np.round(xxn / qq)
+xxq = xxq_idx * qq
+
+# Error
+error = xxn - xxq
+#%% Figura con subplots con ruido
+
+fig, axs = plt.subplots(2, 1, figsize=(10,7), sharex=True)
+
+# --- Señal original + cuantizada ---
+axs[0].plot(tt, xxn, color='blue', label='Señal original')
+axs[0].step(tt, xxq, where='mid', color='orange', label='Señal cuantizada')
+axs[0].set_title('Señal original vs cuantizada')
+axs[0].set_ylabel('Amplitud [V]')
+axs[0].grid()
+axs[0].legend()
+
+# --- Error de cuantización ---
+axs[1].plot(tt, error, color='red', label='Error de cuantización')
+axs[1].set_title('Error de cuantización')
+axs[1].set_xlabel('Tiempo [s]')
+axs[1].set_ylabel('Error [V]')
+axs[1].grid()
+axs[1].legend()
+
+plt.tight_layout()
+plt.show()
+
+#%% Histograma del error de cuantización
+
+plt.figure(figsize=(8,4))
+plt.hist(error, bins=20, density=True, edgecolor='black')
+
+plt.title('Histograma del error de cuantización')
+plt.xlabel('Error [V]')
+plt.ylabel('Densidad de probabilidad')
+plt.grid()
+
+plt.show()
+
+#%% Autocorrelación del error
+
+autocorr = (1/len(error)) * sig.convolve(error, np.flip(error))
+
+lags = np.arange(-len(error)+1, len(error))
+
+plt.figure(figsize=(8,4))
+plt.plot(lags, autocorr, color='purple')
+
+plt.title('Autocorrelación del error de cuantización')
+plt.xlabel('Retardo (lags)')
+plt.ylabel('Autocorrelación')
+plt.grid()
+
+plt.show()
+
+#%% FFT
+
+N = len(xx)
+
+XX = np.fft.fft(xx)
+
+XXmod = np.abs(XX)
+XXph = np.angle(XX)
+
+# Eje de frecuencias
+freq = np.fft.fftfreq(N, d=1/fs)
+
+
+#%% Gráficos
+
+fig, axs = plt.subplots(2, 1, figsize=(10,7), sharex=True)
+
+# --- Módulo ---
+axs[0].plot(freq, XXmod, color='blue')
+axs[0].set_title('Módulo de la FFT')
+axs[0].set_ylabel('|X(f)|')
+axs[0].grid()
+
+# --- Fase ---
+axs[1].plot(freq, XXph, color='green')
+axs[1].set_title('Fase de la FFT')
+axs[1].set_xlabel('Frecuencia [Hz]')
+axs[1].set_ylabel('Fase [rad]')
+axs[1].grid()
+
+plt.tight_layout()
+plt.show()
+
+
+
