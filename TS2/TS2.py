@@ -5,8 +5,16 @@ Created on Thu Mar 26 19:34:08 2026
 @author: gabri
 """
 
+import os
+import sys
 import numpy as np
 import matplotlib.pyplot as plt
+
+# Agrego la ruta a la carpeta lib
+ruta_lib = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'lib'))
+sys.path.append(ruta_lib)
+
+from mis_funciones import mi_senoidal
 
 fs = 2 #Hz, frecuencia de muestreo
 f0 = 20 #Hz, frecuencia de la senoidal
@@ -16,14 +24,7 @@ dc = 0 #valor medio, volts
 ts = 1/fs
 df = fs/n
 
-def mi_senoidal(vmax, dc, f0, n, fs, ph=0):
-    
-    tt = np.linspace(0, (n-1)*ts, n)
-    xx = dc + vmax*np.sin(2*np.pi*f0*tt+ph)
-    
-    return tt, xx
-
-tt, xx = mi_senoidal(vmax, dc, f0, n, fs, ph=0)
+tt, xx = mi_senoidal(vmax, dc, f0, n, fs, ts, ph=0)
 plt.plot(tt, xx)
 
 #%% Potencia de señal
@@ -33,9 +34,9 @@ plt.plot(tt, xx)
 
 mu = 0
 vmax = np.sqrt(2)
-tt, xx = mi_senoidal(vmax, dc, f0, n, fs, ph=0)
+tt, xx = mi_senoidal(vmax, dc, f0, n, fs, ts, ph=0)
 Px = np.var(xx)
-SNR = 15
+SNR = 40
 Pr = 10**(-SNR/10)
 
 U_n = np.random.normal(mu,np.sqrt(Pr),n)
@@ -51,8 +52,8 @@ plt.show()
 
 #%% Cuantización
 
-B = 4       # bits
-Vfs = 2     # volts
+B = 4  # bits
+Vfs = 2  # volts
 qq = Vfs / (2**B)
 #Pr = qq**2/12
 

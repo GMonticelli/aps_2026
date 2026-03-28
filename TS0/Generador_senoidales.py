@@ -271,13 +271,13 @@ freq = np.fft.fftfreq(n, ts)
 fig, axs = plt.subplots(2, 1, figsize=(10,7), sharex=True)
 
 # --- Módulo ---
-axs[0].plot(freq, XXmod, color='blue')
+axs[0].plot(freq, XXmod[:n//2], color='blue')
 axs[0].set_title('Módulo de la FFT')
 axs[0].set_ylabel('|X(f)|')
 axs[0].grid()
 
 # --- Fase ---
-axs[1].plot(freq, XXph, color='green')
+axs[1].plot(freq, XXph[:n//2], color='green')
 axs[1].set_title('Fase de la FFT')
 axs[1].set_xlabel('Frecuencia [Hz]')
 axs[1].set_ylabel('Fase [rad]')

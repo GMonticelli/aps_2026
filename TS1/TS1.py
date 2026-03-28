@@ -10,7 +10,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 
-# agregar ruta a la carpeta lib
+# Agrego la ruta a la carpeta lib
 ruta_lib = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'lib'))
 sys.path.append(ruta_lib)
 
