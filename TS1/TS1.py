@@ -123,3 +123,86 @@ plt.ylabel('Amplitud [V]')
 plt.plot(tt, xx)
 plt.grid()
 plt.show()
+
+#%% Chequeo de ejercicios de convolución
+
+from scipy import signal as sig
+
+# Eje temporal
+n = np.arange(-10, 20)
+
+# Respuesta al impulso
+h = np.zeros_like(n)
+h[n == 0] = 1
+h[n == 4] = -1
+
+#%% A) x(n) = cos(w0*n*Ts)
+# Parámetros
+w0 = 0.2 * np.pi
+Ts = 1
+
+x = np.cos(w0 * n * Ts)
+
+# Convolución
+y = sig.convolve(x, h, mode='same')
+
+# Teórico
+y_teo = x - np.roll(x, 4)
+
+# Gráfico
+plt.figure()
+plt.plot(n, y, label='Convolución')
+plt.plot(n, y_teo, '--', label='x[n] - x[n-4]')
+plt.title('Punto a)')
+plt.xlabel('n')
+plt.grid()
+plt.legend()
+plt.show()
+
+#%% B) x(n) =(1/2)^n * u(n)
+
+# Escalón unitario
+u = (n >= 0).astype(int)
+
+x = (0.5)**n * u
+
+# Convolución
+y = sig.convolve(x, h, mode='same')
+
+# Teórico
+x_shift = np.roll(x, 4)
+x_shift[n < 4] = 0   # corregir el corrimiento
+
+y_teo = x - x_shift
+
+# Gráfico
+plt.figure()
+plt.stem(n, y, linefmt='b-', markerfmt='bo', basefmt=' ')
+plt.stem(n, y_teo, linefmt='r--', markerfmt='ro', basefmt=' ')
+plt.title('Punto b)')
+plt.xlabel('n')
+plt.grid()
+plt.show() 
+
+#%% C) x(n) = u(n+1) - u(n-2)
+
+u1 = (n >= -1).astype(int)
+u2 = (n >= 2).astype(int)
+
+x = u1 - u2
+
+# Convolución
+y = sig.convolve(x, h, mode='same')
+
+# Teórico
+x_shift = np.roll(x, 4)
+y_teo = x - x_shift
+
+# Gráfico
+plt.figure()
+plt.stem(n, y, linefmt='b-', markerfmt='bo', basefmt=' ')
+plt.stem(n, y_teo, linefmt='r--', markerfmt='ro', basefmt=' ')
+plt.title('Punto c)')
+plt.xlabel('n')
+plt.grid()
+plt.show()

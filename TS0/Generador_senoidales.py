@@ -155,9 +155,10 @@ plt.show()
 
 #%% Cuantización y error
 
-B = 3       # bits
-Vfs = 3     # volts
+B = 4       # bits
+Vfs = 2     # volts
 qq = Vfs / (2**B)
+Pr = qq**2/12
 
 # Cuantización
 xxq_idx = np.round(xx / qq)
@@ -262,7 +263,7 @@ XXmod = np.abs(XX)
 XXph = np.angle(XX)
 
 # Eje de frecuencias
-freq = np.fft.fftfreq(N, d=1/fs)
+freq = np.fft.fftfreq(n, ts)
 
 
 #%% Gráficos
@@ -285,5 +286,25 @@ axs[1].grid()
 plt.tight_layout()
 plt.show()
 
+#%%
 
+SNR = 15
+Pr = 10**(-SNR/10)
+
+#XX = XX[:n//2]
+#XX_db = 20 * np.log(np.abs(XX))
+
+#U_N = np.fft.fft(U_n)
+#U_N = U_N[:n//2]
+#UN_db = 20 * np.log(np.abs(U_N))
+
+XXQ = np.fft.fft(xxq)
+XXQ = XXQ[:n//2]
+freq = freq[:n//2]
+
+plt.title('Densidad espectral de potencia')
+plt.plot(freq, XXQ, label = 'Potencia de Senoidal pura')
+#plt.plot(freq, UN_db, label = 'Potencioa de ruido')
+plt.grid()
+plt.show()
 
