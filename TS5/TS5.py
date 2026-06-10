@@ -66,23 +66,30 @@ welch_ecg_fr, welch_ecg = sig.welch(ecg_one_lead, fs = fs_ecg, window = 'hamming
 
 plt.figure(4)
 plt.title('Welch - ECG')
+plt.xlabel('Frecuencia [Hz]')
 plt.xlim(-1,40)
 plt.plot(welch_ecg_fr, welch_ecg)
+plt.grid()
+plt.show()
 
-#%% PPD
+#%% PPG
+
 tamaño = ppg.shape[0]
 promedios = 10
 nperseg = tamaño // promedios
 
-welch_ppg_fr, welch_ppg = sig.welch(ppg, fs = fs_ecg, window = 'hamming',nperseg = nperseg, noverlap = 5)
+welch_ppg_fr, welch_ppg = sig.welch(ppg, fs = fs_ppg, window = 'hamming',nperseg = nperseg, noverlap = 5)
 
 plt.figure(5)
 plt.title('Welch - PPG')
+plt.xlabel('Frecuencia [Hz]')
 plt.xlim(-1,30)
 plt.plot(welch_ppg_fr, welch_ppg)
+plt.grid()
+plt.show()
 
-# Audio
-# La cucaracha
+#%% Audio - La cucaracha
+
 tamaño = wav_data_cuca.shape[0]
 promedios = 100
 nperseg = tamaño // promedios
@@ -91,9 +98,69 @@ welch_cuca_fr, welch_cuca = sig.welch(wav_data_cuca, fs = fs_audio_cuca, window 
 
 plt.figure(6)
 plt.title('Welch - La cucaracha')
+plt.xlabel('Frecuencia [Hz]')
 plt.xlim(500,2500)
 plt.plot(welch_cuca_fr, welch_cuca)
+plt.grid()
+plt.show()
 
-#%%
+#%% Calculos de ancho de banda
 
-Pot_acum = np.cumsum(welch_ecg)
+# ECG
+df_ecg = welch_ecg_fr[1] - welch_ecg_fr[0]
+acum = np.cumsum(welch_ecg) * df_ecg
+acum_norm = acum / acum[-1]
+
+idx_inf_ecg = np.where(acum_norm >= 0.005)[0][0] # Límite inferior (0.5%)
+idx_sup_ecg = np.where(acum_norm >= 0.995)[0][0] # Límite superior (99.5%)
+
+f_inf_ecg = welch_ecg_fr[idx_inf_ecg]
+f_sup_ecg = welch_ecg_fr[idx_sup_ecg]
+BW_ecg = f_sup_ecg - f_inf_ecg
+
+# PPG
+df_ppg = welch_ppg_fr[1] - welch_ppg_fr[0]
+acum = np.cumsum(welch_ppg) * df_ppg
+acum_norm = acum / acum[-1]
+
+idx_inf_ppg = np.where(acum_norm >= 0.005)[0][0] # Límite inferior (0.5%)
+idx_sup_ppg = np.where(acum_norm >= 0.995)[0][0] # Límite superior (99.5%)
+
+f_inf_ppg = welch_ppg_fr[idx_inf_ppg]
+f_sup_ppg = welch_ppg_fr[idx_sup_ppg]
+BW_ppg = f_sup_ppg - f_inf_ppg
+
+# Audio
+df_cuca = welch_cuca_fr[1] - welch_cuca_fr[0]
+acum = np.cumsum(welch_cuca) * df_cuca
+acum_norm = acum / acum[-1]
+
+idx_inf_cuca = np.where(acum_norm >= 0.005)[0][0] # Límite inferior (0.5%)
+idx_sup_cuca = np.where(acum_norm >= 0.995)[0][0] # Límite superior (99.5%)
+
+f_inf_cuca = welch_cuca_fr[idx_inf_cuca]
+f_sup_cuca = welch_cuca_fr[idx_sup_cuca]
+BW_cuca = f_sup_cuca - f_inf_cuca
+
+#%% Tabla de resultados
+
+nombres = ['ECG', 'PPG', 'Audio - La cucaracha']
+
+f_inf = [f_inf_ecg, f_inf_ppg, f_inf_cuca]
+f_sup = [f_sup_ecg, f_sup_ppg, f_sup_cuca]
+BW = [BW_ecg, BW_ppg, BW_cuca]
+
+print('\nTabla de anchos de banda estimados')
+print('-------------------------------------------------------------')
+print('{:<25s} {:>12s} {:>12s} {:>12s}'.format('Señal', 'f_inf [Hz]', 'f_sup [Hz]', 'BW [Hz]'))
+print('-------------------------------------------------------------')
+
+for i in range(len(nombres)):
+    print('{:<25s} {:>12.2f} {:>12.2f} {:>12.2f}'.format(
+        nombres[i],
+        f_inf[i],
+        f_sup[i],
+        BW[i]
+    ))
+
+print('-------------------------------------------------------------')
